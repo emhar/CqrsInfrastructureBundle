@@ -1,0 +1,6 @@
+services:
+    emhar_cqrs.data_collector.command_collector:
+        class: Emhar\CqrsInfrastructureBundle\DataCollector\CommandCollector
+        arguments: ['@emhar_cqrs.synchronous_command_bus', '@emhar_cqrs.asynchronous_command_bus']
+        tags:
+            - { name: data_collector, template: 'EmharCqrsInfrastructureBundle:Collector:emhar_cqrs_command', id: 'emhar_cqrs_command' }

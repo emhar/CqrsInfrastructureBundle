@@ -1,0 +1,27 @@
+{
+  "name": "emhar/cqrs-infrastructure-bundle",
+  "description": "Implements emhar/cqrs-infrastructure into Symfony3",
+  "keywords": ["cqrs", "symfony"],
+  "homepage": "https://github.com/emhar/CqrsInfrastructureBundle",
+  "type": "symfony-bundle",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Emmanuel Harleaux",
+      "homepage": "https://github.com/emhar"
+    }
+  ],
+  "require": {
+    "php": ">=7.0",
+    "symfony/symfony": "3.1.*",
+    "doctrine/orm": "^2.5",
+    "doctrine/doctrine-bundle": "^1.6",
+    "jms/job-queue-bundle": "^1.4"
+    "twig/twig": "1.*"
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0-dev"
+    }
+  }
+}

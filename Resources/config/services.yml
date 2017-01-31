@@ -1,0 +1,13 @@
+services:
+    emhar_cqrs.synchronous_command_bus:
+        class: Emhar\CqrsInfrastructureBundle\CommandBus\SymfonyEventDispatcherCommandBus
+        arguments: ['@event_dispatcher']
+    emhar_cqrs.asynchronous_command_bus:
+        class: Emhar\CqrsInfrastructureBundle\CommandBus\JmsJobQueueCommandBus
+        arguments: ['@doctrine']
+    emhar_cqrs.doctrine_event_collector:
+        class: Emhar\CqrsInfrastructureBundle\Event\DoctrineEventCollector
+        public: false
+        arguments: [[]] #see compiler pass, inject all repositories
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
