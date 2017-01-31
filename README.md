@@ -1,6 +1,6 @@
 # CQRS Infrastructure Symfony 3 Bundle
 
-This bundle is a Symfony 3, Doctrine ORM implementation of this library.
+This bundle is a Symfony 3, Doctrine ORM implementation of [this library](https://github.com/emhar/CqrsInfrastructure).
 
 It provides two command bus:
 * ```emhar_cqrs.synchronous_command_bus```
