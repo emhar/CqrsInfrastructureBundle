@@ -32,6 +32,6 @@
     }
   ],
   "autoload": {
-    "psr-0": { "Emhar\\CqrsInfrastructureBundle": "" }
+    "psr-4": { "Emhar\\CqrsInfrastructureBundle\\": "" }
   }
 }
