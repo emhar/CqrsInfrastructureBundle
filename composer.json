@@ -26,9 +26,12 @@
     }
   },
   "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/emhar/CqrsInfrastructure.git"
-        }
-    ]
+    {
+      "type": "vcs",
+      "url": "https://github.com/emhar/CqrsInfrastructure.git"
+    }
+  ],
+  "autoload": {
+    "psr-0": { "Emhar\\CqrsInfrastructureBundle": "" }
+  }
 }
