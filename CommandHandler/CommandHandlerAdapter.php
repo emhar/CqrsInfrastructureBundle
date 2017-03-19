@@ -86,8 +86,9 @@ class CommandHandlerAdapter
                 $commandEvent->stopPropagation();
             }
             $this->doctrineRegistry->getManager()->flush();
+            $events = $this->eventCollector->getEvents();
             if ($this->innerService->eventEnabled()) {
-                foreach ($this->eventCollector->getEvents() as $event) {
+                foreach ($events as $event) {
                     $this->eventDispatcher->dispatch(get_class($event), new SymfonyEventDispatcherEvent($event));
                 }
                 $this->doctrineRegistry->getManager()->flush();
