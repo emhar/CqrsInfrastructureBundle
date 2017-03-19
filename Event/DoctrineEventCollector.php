@@ -66,20 +66,6 @@ class DoctrineEventCollector implements EventSubscriber, EventContainerInterface
     /**
      * @param LifecycleEventArgs $event
      */
-    private function collectEventsFromEntity(LifecycleEventArgs $event)
-    {
-        $entity = $event->getEntity();
-        if ($entity instanceof AbstractEventContainer) {
-            foreach ($entity->getEvents() as $modelEvent) {
-                $this->collectedEvents[] = $modelEvent;
-            }
-            $entity->eraseEvents();
-        }
-    }
-
-    /**
-     * @param LifecycleEventArgs $event
-     */
     public function postUpdate(LifecycleEventArgs $event)
     {
         $this->collectEventsFromEntity($event);
@@ -94,11 +80,26 @@ class DoctrineEventCollector implements EventSubscriber, EventContainerInterface
     }
 
     /**
+     * @param LifecycleEventArgs $event
+     */
+    private function collectEventsFromEntity(LifecycleEventArgs $event)
+    {
+        $entity = $event->getEntity();
+        if ($entity instanceof AbstractEventContainer) {
+            foreach ($entity->getEvents() as $modelEvent) {
+                $this->collectedEvents[] = $modelEvent;
+            }
+            $entity->eraseEvents();
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function getEvents()
     {
         $collectedEventsCollections = array($this->collectedEvents);
+        $this->collectedEvents = array();
         foreach ($this->repositories as $repository) {
             $collectedEventsCollections[] = $repository->getEvents();
             $repository->eraseEvents();
