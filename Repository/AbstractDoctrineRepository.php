@@ -48,14 +48,18 @@ abstract class AbstractDoctrineRepository implements EventContainerInterface
         $this->events = array();
     }
 
-    /**
+    //**
      * @return EntityManager
-     * @throws \InvalidArgumentException
      */
-    protected function getDoctrineManager()
+    protected function getDoctrineManager(): EntityManager
     {
-        $manager = $this->doctrineRegistry->getManager();
-        /* @var $manager EntityManager */
+        try{
+            $manager = $this->doctrineRegistry->getManager();
+            /* @var $manager EntityManager */
+        } catch (\InvalidArgumentException $e){
+            trigger_error('No entity manager defined', E_USER_ERROR);
+            $manager = null;
+        }
         return $manager;
     }
 }
