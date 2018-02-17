@@ -48,7 +48,7 @@ abstract class AbstractDoctrineRepository implements EventContainerInterface
         $this->events = array();
     }
 
-    //**
+    /**
      * @return EntityManager
      */
     protected function getDoctrineManager(): EntityManager
