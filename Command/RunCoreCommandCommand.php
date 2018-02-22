@@ -33,7 +33,8 @@ class RunCoreCommandCommand extends ContainerAwareCommand
             ->setName('emhar_cqrs:core-command:run')
             ->setDescription('Run a cqrs command.')
             ->setHelp('Deserialize given cqrs command and run')
-            ->addArgument('serialized-command', InputArgument::REQUIRED, 'The serialized command.');
+            ->addArgument('serialized-command', InputArgument::REQUIRED, 'The serialized command.')
+            ->addArgument('user-notification-enabled', InputArgument::OPTIONAL, 'If set to false, disable email notification.');
     }
 
     /**
@@ -52,11 +53,15 @@ class RunCoreCommandCommand extends ContainerAwareCommand
             '',
         ]);
         $serializedCommand = $input->getArgument('serialized-command');
+        $userNotificationEnabled = true;
+        if($input->hasArgument('user-notification-enabled')){
+            $userNotificationEnabled= $input->getArgument('user-notification-enabled');
+        }
         $command = unserialize(base64_decode($serializedCommand), array('allowed_classes' => true));
         if ($command instanceof CommandInterface) {
             $output->writeln(print_r($command, true));
             $bus = $this->getContainer()->get('emhar_cqrs.synchronous_command_bus');
-            $bus->getCommandResponse($command);
+            $bus->getCommandResponse($command, $userNotificationEnabled);
             $output->writeln([
                 'Tasks Finish',
                 '============',

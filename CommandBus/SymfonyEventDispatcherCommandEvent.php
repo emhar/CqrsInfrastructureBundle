@@ -27,6 +27,11 @@ class SymfonyEventDispatcherCommandEvent extends Event
     protected $command;
 
     /**
+     * @var boolean
+     */
+    protected $userNotificationEnabled;
+
+    /**
      * @var mixed|null
      */
     protected $response;
@@ -47,10 +52,12 @@ class SymfonyEventDispatcherCommandEvent extends Event
 
     /**
      * @param CommandInterface $command
+     * @param bool $enableUserNotification
      */
-    public function __construct(CommandInterface $command)
+    public function __construct(CommandInterface $command, bool $enableUserNotification)
     {
         $this->command = $command;
+        $this->userNotificationEnabled = $enableUserNotification;
     }
 
     /**
@@ -90,7 +97,7 @@ class SymfonyEventDispatcherCommandEvent extends Event
      *
      * @return SymfonyEventDispatcherCommandEvent
      */
-    public function setExecutionStart()
+    public function setExecutionStart(): SymfonyEventDispatcherCommandEvent
     {
         $this->executionStart = microtime();
 
@@ -103,7 +110,7 @@ class SymfonyEventDispatcherCommandEvent extends Event
      *
      * @return SymfonyEventDispatcherCommandEvent
      */
-    public function setExecutionStop()
+    public function setExecutionStop(): SymfonyEventDispatcherCommandEvent
     {
         $this->executionTime = microtime() - $this->executionStart;
 
@@ -126,5 +133,13 @@ class SymfonyEventDispatcherCommandEvent extends Event
     public function getExecutionTime()
     {
         return $this->executionTime;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isUserNotificationEnabled()
+    {
+        return $this->userNotificationEnabled;
     }
 }

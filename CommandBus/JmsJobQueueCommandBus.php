@@ -38,7 +38,7 @@ class JmsJobQueueCommandBus implements CommandBusInterface
      * {@inheritDoc}
      * @throws \LogicException
      */
-    public function getCommandResponse(CommandInterface $command)
+    public function getCommandResponse(CommandInterface $command, bool $enableUserNotification = true)
     {
         throw new \LogicException('Cannot use an asynchronous command and getting a response.');
     }
@@ -47,14 +47,17 @@ class JmsJobQueueCommandBus implements CommandBusInterface
      * {@inheritDoc}
      * @throws \InvalidArgumentException
      */
-    public function postCommand(CommandInterface $command)
+    public function postCommand(CommandInterface $command, bool $userNotificationEnabled = true)
     {
         if (!in_array($command, $this->postedCommands, false)) {
             $this->postedCommands[] = $command;
             $serializedCommand = serialize($command);
             $encodedCommand = base64_encode($serializedCommand);
             $em = $this->doctrineRegistry->getManager();
-            $args = array('serialized-command' => $encodedCommand);
+            $args = array(
+                'serialized-command' => $encodedCommand,
+                'user-notification-enabled' => $userNotificationEnabled
+            );
             $commandName = 'emhar_cqrs:core-command:run';
             /* @see \JMS\JobQueueBundle\Entity\Repository\JobRepository::findJob() */
             //Same current with a criteria on state

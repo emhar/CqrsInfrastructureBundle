@@ -74,6 +74,7 @@ class CommandHandlerAdapter
             if ($argument instanceof SymfonyEventDispatcherCommandEvent) {
                 $commandEvent = $argument;
                 $arguments[$key] = $argument->getCommand();
+                $this->innerService->setUserNotificationEnabled($commandEvent->isUserNotificationEnabled());
             }
         }
         $em = $this->doctrineRegistry->getManager();
@@ -81,18 +82,17 @@ class CommandHandlerAdapter
         $em->beginTransaction();
         try {
             $result = call_user_func_array(array($this->innerService, $name), $arguments);
-            if($commandEvent) {
+            if ($commandEvent) {
                 $commandEvent->setResponse($result);
                 $commandEvent->stopPropagation();
             }
             $this->doctrineRegistry->getManager()->flush();
             $events = $this->eventCollector->getEvents();
-            if ($this->innerService->eventEnabled()) {
-                foreach ($events as $event) {
-                    $this->eventDispatcher->dispatch(get_class($event), new SymfonyEventDispatcherEvent($event));
-                }
-                $this->doctrineRegistry->getManager()->flush();
+            foreach ($events as $event) {
+                $event->setUserNotificationEnabled($commandEvent->isUserNotificationEnabled());
+                $this->eventDispatcher->dispatch(get_class($event), new SymfonyEventDispatcherEvent($event));
             }
+            $this->doctrineRegistry->getManager()->flush();
             $em->commit();
         } catch (\Exception $e) {
             $em->getConnection()->rollBack();

@@ -36,12 +36,11 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
     }
 
     /**
-     * @param CommandInterface $command
-     * @return mixed|null
+     * {@inheritDoc}
      */
-    public function getCommandResponse(CommandInterface $command)
+    public function getCommandResponse(CommandInterface $command, bool $enableUserNotification = true)
     {
-        $event = new SymfonyEventDispatcherCommandEvent($command);
+        $event = new SymfonyEventDispatcherCommandEvent($command, $enableUserNotification);
         $this->executedEvents[] = $event;
         $event->setExecutionStart();
         $this->dispatcher->dispatch(get_class($command), $event);
@@ -50,16 +49,16 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
     }
 
     /**
-     * @param CommandInterface $command
+     * {@inheritDoc}
      */
-    public function postCommand(CommandInterface $command)
+    public function postCommand(CommandInterface $command, bool $userNotificationEnabled = true)
     {
         foreach ($this->executedEvents as $executedEvent) {
             if ($command == $executedEvent->getCommand()) {
                 return;
             }
         }
-        $event = new SymfonyEventDispatcherCommandEvent($command);
+        $event = new SymfonyEventDispatcherCommandEvent($command, $userNotificationEnabled);
         $event->setExecutionStart();
         $this->executedEvents[] = $event;
         $this->dispatcher->dispatch(get_class($command), $event);
