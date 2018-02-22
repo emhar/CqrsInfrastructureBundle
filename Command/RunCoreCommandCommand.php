@@ -54,7 +54,10 @@ class RunCoreCommandCommand extends ContainerAwareCommand
         ]);
         $serializedCommand = $input->getArgument('serialized-command');
         $userNotificationEnabled = true;
-        if($input->hasArgument('user-notification-enabled')){
+        if($input->hasArgument('user-notification-enabled')
+            && !$input->getArgument('user-notification-enabled') === null
+        ){
+            throw new \Exception(\GuzzleHttp\json_encode($input->getArguments()));
             $userNotificationEnabled= $input->getArgument('user-notification-enabled');
         }
         $command = unserialize(base64_decode($serializedCommand), array('allowed_classes' => true));

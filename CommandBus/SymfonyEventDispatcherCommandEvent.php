@@ -99,7 +99,7 @@ class SymfonyEventDispatcherCommandEvent extends Event
      */
     public function setExecutionStart(): SymfonyEventDispatcherCommandEvent
     {
-        $this->executionStart = microtime();
+        $this->executionStart = microtime(true);
 
         return $this;
     }
@@ -112,7 +112,7 @@ class SymfonyEventDispatcherCommandEvent extends Event
      */
     public function setExecutionStop(): SymfonyEventDispatcherCommandEvent
     {
-        $this->executionTime = microtime() - $this->executionStart;
+        $this->executionTime = microtime(true) - $this->executionStart;
 
         return $this;
     }
