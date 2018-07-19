@@ -53,11 +53,6 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
      */
     public function postCommand(CommandInterface $command, bool $userNotificationEnabled = true)
     {
-        foreach ($this->executedEvents as $executedEvent) {
-            if ($command == $executedEvent->getCommand()) {
-                return;
-            }
-        }
         $event = new SymfonyEventDispatcherCommandEvent($command, $userNotificationEnabled);
         $event->setExecutionStart();
         $this->executedEvents[] = $event;
