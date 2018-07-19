@@ -67,7 +67,9 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
     {
         $dispatchedEvents = array();
         /* @var $dispatchedEvents SymfonyEventDispatcherCommandEvent[] */
-        foreach ($this->events as $key => $event) {
+        $events = $this->events;
+        $this->events = array();
+        foreach ($events as $key => $event) {
             $alreadySend = false;
             foreach ($dispatchedEvents as $dispatchedEvent) {
                 if ($dispatchedEvent->getCommand() == $event->getCommand()) {
@@ -80,7 +82,6 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
                 $event->setExecutionStop();
                 $dispatchedEvents[] = $event;
                 $this->executedEvents[] = $event;
-                unset($this->events[$key]);
             }
         }
     }
