@@ -28,11 +28,17 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
     protected $executedEvents = array();
 
     /**
+     * @var SymfonyEventDispatcherCommandEvent[]
+     */
+    protected $events = array();
+
+    /**
      * @param EventDispatcherInterface $dispatcher
      */
     public function __construct(EventDispatcherInterface $dispatcher)
     {
         $this->dispatcher = $dispatcher;
+        $this->events = array();
     }
 
     /**
@@ -54,10 +60,29 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
     public function postCommand(CommandInterface $command, bool $userNotificationEnabled = true)
     {
         $event = new SymfonyEventDispatcherCommandEvent($command, $userNotificationEnabled);
-        $event->setExecutionStart();
-        $this->executedEvents[] = $event;
-        $this->dispatcher->dispatch(get_class($command), $event);
-        $event->setExecutionStop();
+        $this->events[] = $event;
+    }
+
+    public function dispatchPostedCommand()
+    {
+        $dispatchedEvents = array();
+        /* @var $dispatchedEvents SymfonyEventDispatcherCommandEvent[] */
+        foreach ($this->events as $key => $event) {
+            $alreadySend = false;
+            foreach ($dispatchedEvents as $dispatchedEvent) {
+                if ($dispatchedEvent->getCommand() == $event->getCommand()) {
+                    $alreadySend = true;
+                }
+            }
+            if (!$alreadySend) {
+                $event->setExecutionStart();
+                $this->dispatcher->dispatch(get_class($event->getCommand()), $event);
+                $event->setExecutionStop();
+                $dispatchedEvents[] = $event;
+                $this->executedEvents[] = $event;
+                unset($this->events[$key]);
+            }
+        }
     }
 
     /**

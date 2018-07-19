@@ -2,6 +2,8 @@ services:
     emhar_cqrs.synchronous_command_bus:
         class: Emhar\CqrsInfrastructureBundle\CommandBus\SymfonyEventDispatcherCommandBus
         arguments: ['@event_dispatcher']
+        tags:
+            - { name: kernel.event_listener, event: 'cqrs-event-collected', method: 'dispatchPostedCommand' }
     emhar_cqrs.asynchronous_command_bus:
         class: Emhar\CqrsInfrastructureBundle\CommandBus\JmsJobQueueCommandBus
         arguments: ['@doctrine']
