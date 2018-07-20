@@ -93,13 +93,12 @@ class CommandHandlerAdapter
                 $this->eventDispatcher->dispatch(get_class($event), new SymfonyEventDispatcherEvent($event));
             }
             $this->doctrineRegistry->getManager()->flush();
-            $em->clear();
-            $this->eventDispatcher->dispatch('cqrs-event-collected');
             $em->commit();
         } catch (\Exception $e) {
             $em->getConnection()->rollBack();
             throw $e;
         }
+        $this->eventDispatcher->dispatch('cqrs-event-collected');
         return $result;
     }
 }

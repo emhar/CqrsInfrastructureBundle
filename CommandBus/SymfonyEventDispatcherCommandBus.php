@@ -28,9 +28,9 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
     protected $executedEvents = array();
 
     /**
-     * @var SymfonyEventDispatcherCommandEvent[]
+     * @var \SplStack
      */
-    protected $events = array();
+    protected $events;
 
     /**
      * @param EventDispatcherInterface $dispatcher
@@ -38,7 +38,7 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
     public function __construct(EventDispatcherInterface $dispatcher)
     {
         $this->dispatcher = $dispatcher;
-        $this->events = array();
+        $this->events = new \SplStack();
     }
 
     /**
@@ -59,31 +59,34 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
      */
     public function postCommand(CommandInterface $command, bool $userNotificationEnabled = true)
     {
+        foreach ($this->events as $event) {
+            if ($command == $event->getCommand()) {
+                return;
+            }
+        }
         $event = new SymfonyEventDispatcherCommandEvent($command, $userNotificationEnabled);
-        $this->events[] = $event;
+        $this->events->push($event);
     }
 
     public function dispatchPostedCommand()
     {
-        $dispatchedEvents = array();
-        /* @var $dispatchedEvents SymfonyEventDispatcherCommandEvent[] */
-        $events = $this->events;
-        $this->events = array();
-        foreach ($events as $key => $event) {
-            $alreadySend = false;
-            foreach ($dispatchedEvents as $dispatchedEvent) {
-                if ($dispatchedEvent->getCommand() == $event->getCommand()) {
-                    $alreadySend = true;
-                }
-            }
-            if (!$alreadySend) {
-                $event->setExecutionStart();
-                $this->dispatcher->dispatch(get_class($event->getCommand()), $event);
-                $event->setExecutionStop();
-                $dispatchedEvents[] = $event;
-                $this->executedEvents[] = $event;
-            }
+        while ($event = $this->getNextEvent()){
+            $event->setExecutionStart();
+            $this->dispatcher->dispatch(get_class($event->getCommand()), $event);
+            $event->setExecutionStop();
+            $this->executedEvents[] = $event;
         }
+    }
+
+    /**
+     * @return SymfonyEventDispatcherCommandEvent|null
+     */
+    protected function getNextEvent()
+    {
+        if($this->events->isEmpty()){
+            return null;
+        }
+        return $this->events->shift();
     }
 
     /**
