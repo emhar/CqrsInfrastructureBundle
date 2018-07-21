@@ -33,12 +33,18 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
     protected $events;
 
     /**
+     * @var bool
+     */
+    protected $isInProgress;
+
+    /**
      * @param EventDispatcherInterface $dispatcher
      */
     public function __construct(EventDispatcherInterface $dispatcher)
     {
         $this->dispatcher = $dispatcher;
         $this->events = new \SplStack();
+        $this->isInProgress = false;
     }
 
     /**
@@ -70,11 +76,15 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
 
     public function dispatchPostedCommand()
     {
-        while ($event = $this->getNextEvent()){
-            $event->setExecutionStart();
-            $this->dispatcher->dispatch(get_class($event->getCommand()), $event);
-            $event->setExecutionStop();
-            $this->executedEvents[] = $event;
+        if(!$this->isInProgress) {
+            $this->isInProgress = true;
+            while ($event = $this->getNextEvent()) {
+                $event->setExecutionStart();
+                $this->dispatcher->dispatch(get_class($event->getCommand()), $event);
+                $event->setExecutionStop();
+                $this->executedEvents[] = $event;
+            }
+            $this->isInProgress = false;
         }
     }
 
