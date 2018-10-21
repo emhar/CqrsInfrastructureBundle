@@ -84,7 +84,6 @@ class CommandHandlerAdapter
             $result = call_user_func_array(array($this->innerService, $name), $arguments);
             if ($commandEvent) {
                 $commandEvent->setResponse($result);
-                $commandEvent->stopPropagation();
             }
             $this->doctrineRegistry->getManager()->flush();
             $events = $this->eventCollector->getEvents();
