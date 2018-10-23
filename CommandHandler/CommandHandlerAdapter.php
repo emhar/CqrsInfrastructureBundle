@@ -88,7 +88,7 @@ class CommandHandlerAdapter
             $this->doctrineRegistry->getManager()->flush();
             $events = $this->eventCollector->getEvents();
             foreach ($events as $event) {
-                $event->setUserNotificationEnabled($commandEvent->isUserNotificationEnabled());
+                $event->setUserNotificationEnabled($commandEvent ? $commandEvent->isUserNotificationEnabled() : true);
                 $this->eventDispatcher->dispatch(get_class($event), new SymfonyEventDispatcherEvent($event));
             }
             $this->doctrineRegistry->getManager()->flush();
