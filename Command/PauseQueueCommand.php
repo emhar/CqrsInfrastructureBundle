@@ -38,11 +38,21 @@ class PauseQueueCommand extends ContainerAwareCommand
 
         /** @var EntityManager $em */
         $em = $registry->getManagerForClass('JMSJobQueueBundle:Job');
+        $i = 0;
         do {
+            $i++;
             sleep(1);
-            $this->pauseAllPendingJobs($em);
-            $count = $this->countAllRunningJob($em);
-            $output->writeln('Still ' . $count . ' jobs running queue');
+            try {
+                $this->pauseAllPendingJobs($em);
+                $count = $this->countAllRunningJob($em);
+                $output->writeln('Still ' . $count . ' jobs running queue');
+            } catch (\Exception $e){
+                $count = 1;
+                $output->writeln('Fail to pause running jobs');
+            }
+            if($i > 1000){
+                throw new \Exception('Cannot pause running jobs, 1000 loops are not enough');
+            }
         } while ((int)$count !== 0);
         return 0;
     }
