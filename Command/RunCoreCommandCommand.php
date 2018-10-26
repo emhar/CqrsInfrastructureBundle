@@ -11,6 +11,7 @@
 
 namespace Emhar\CqrsInfrastructureBundle\Command;
 
+use Doctrine\Common\Util\Debug;
 use Emhar\CqrsInfrastructure\Command\CommandInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -61,7 +62,7 @@ class RunCoreCommandCommand extends ContainerAwareCommand
         }
         $command = unserialize(base64_decode($serializedCommand), array('allowed_classes' => true));
         if ($command instanceof CommandInterface) {
-            $output->writeln(print_r($command, true));
+            $output->writeln(Debug::dump($command,10, true, false));
             $bus = $this->getContainer()->get('emhar_cqrs.synchronous_command_bus');
             $bus->getCommandResponse($command, $userNotificationEnabled);
             $output->writeln([

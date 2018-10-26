@@ -11,6 +11,7 @@
 
 namespace Emhar\CqrsInfrastructureBundle\DataCollector;
 
+use Doctrine\Common\Util\Debug;
 use Emhar\CqrsInfrastructure\Command\CommandInterface;
 use Emhar\CqrsInfrastructureBundle\CommandBus\JmsJobQueueCommandBus;
 use Emhar\CqrsInfrastructureBundle\CommandBus\SymfonyEventDispatcherCommandBus;
@@ -57,7 +58,7 @@ class CommandCollector extends DataCollector
             /* @var $event SymfonyEventDispatcherCommandEvent */
             $this->data['emhar_cqrs_command'][] = array(
                 'command' => (new \ReflectionClass($event->getCommand()))->getShortName(),
-                'arguments' => print_r($event->getCommand(), true),
+                'arguments' => Debug::dump($event->getCommand(),10, true, false),
                 'executionTime' => $event->getTiming()
             );
         }
@@ -66,7 +67,7 @@ class CommandCollector extends DataCollector
             /* @var $command CommandInterface */
             $this->data['emhar_cqrs_job'][] = array(
                 'command' => (new \ReflectionClass($command))->getShortName(),
-                'arguments' => print_r($command, true)
+                'arguments' => Debug::dump($command,10, true, false)
             );
         }
     }

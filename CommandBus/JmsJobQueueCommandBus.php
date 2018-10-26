@@ -12,6 +12,7 @@
 namespace Emhar\CqrsInfrastructureBundle\CommandBus;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
+use Doctrine\Common\Util\Debug;
 use Doctrine\DBAL\Types\Type;
 use Emhar\CqrsInfrastructure\Command\CommandInterface;
 use Emhar\CqrsInfrastructure\CommandBus\CommandBusInterface;
@@ -73,7 +74,7 @@ class JmsJobQueueCommandBus implements CommandBusInterface
                 ->getOneOrNullResult();
             if (!$pendingJob) {
                 $job = new Job($commandName, $args, true, $queue);
-                $job->addOutput(print_r($command, true));
+                $job->addOutput(Debug::dump($command,10, true, false));
                 $em->persist($job);
             }
         }
