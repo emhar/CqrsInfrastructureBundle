@@ -18,7 +18,7 @@
     "doctrine/doctrine-bundle": "^1.6",
     "jms/job-queue-bundle": "^1.4",
     "twig/twig": "1.*",
-    "emhar/cqrs-infrastructure": "^1.0"
+    "emhar/cqrs-infrastructure": "^1.2"
   },
   "extra": {
     "branch-alias": {
