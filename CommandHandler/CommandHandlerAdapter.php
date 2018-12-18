@@ -14,6 +14,7 @@ namespace Emhar\CqrsInfrastructureBundle\CommandHandler;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManager;
 use Emhar\CqrsInfrastructure\CommandHandler\AbstractCommandHandler;
+use Emhar\CqrsInfrastructure\CommandHandler\AbstractInfrastructureExceptionListeningCommandHandler;
 use Emhar\CqrsInfrastructure\Event\EventContainerInterface;
 use Emhar\CqrsInfrastructureBundle\CommandBus\SymfonyEventDispatcherCommandEvent;
 use Emhar\CqrsInfrastructureBundle\Event\SymfonyEventDispatcherEvent;
@@ -70,10 +71,12 @@ class CommandHandlerAdapter
     public function __call($name, $arguments)
     {
         $commandEvent = null;
+        $command = null;
         foreach ($arguments as $key => $argument) {
             if ($argument instanceof SymfonyEventDispatcherCommandEvent) {
                 $commandEvent = $argument;
-                $arguments[$key] = $argument->getCommand();
+                $command = $argument->getCommand();
+                $arguments[$key] = $command;
                 $this->innerService->setUserNotificationEnabled($commandEvent->isUserNotificationEnabled());
             }
         }
@@ -94,7 +97,15 @@ class CommandHandlerAdapter
             $this->doctrineRegistry->getManager()->flush();
             $em->commit();
         } catch (\Exception $e) {
-            $em->getConnection()->rollBack();
+            while ($em->getConnection()->getTransactionNestingLevel() > 0) {
+                $em->getConnection()->rollback();
+            }
+            $em->close();
+            if ($this->innerService instanceof AbstractInfrastructureExceptionListeningCommandHandler && $command) {
+                $this->doctrineRegistry->resetManager();
+                $this->innerService->onInfrastructureException($e, $command);
+                $this->doctrineRegistry->getManager()->flush();
+            }
             throw $e;
         }
         $this->eventDispatcher->dispatch('cqrs-event-collected');
