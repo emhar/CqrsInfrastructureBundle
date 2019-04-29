@@ -96,6 +96,8 @@ class CommandHandlerAdapter
             }
             $this->doctrineRegistry->getManager()->flush();
             $em->commit();
+            $this->eventDispatcher->dispatch('cqrs-event-collected');
+            $this->doctrineRegistry->getManager()->flush();
         } catch (\Exception $e) {
             while ($em->getConnection()->getTransactionNestingLevel() > 0) {
                 $em->getConnection()->rollback();
@@ -108,7 +110,6 @@ class CommandHandlerAdapter
             }
             throw $e;
         }
-        $this->eventDispatcher->dispatch('cqrs-event-collected');
         return $result;
     }
 }

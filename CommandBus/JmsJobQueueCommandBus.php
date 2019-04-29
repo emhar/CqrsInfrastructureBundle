@@ -26,6 +26,7 @@ class JmsJobQueueCommandBus implements CommandBusInterface
     protected $doctrineRegistry;
 
     protected $postedCommands = array();
+    protected $toInsertCommands = array();
 
     /**
      * @param Registry $doctrineRegistry
@@ -52,12 +53,21 @@ class JmsJobQueueCommandBus implements CommandBusInterface
     {
         if (!in_array($command, $this->postedCommands, false)) {
             $this->postedCommands[] = $command;
+            $data = array('command' => $command, 'user-notification-enabled' => $userNotificationEnabled, 'queue' => $queue);
+            $this->toInsertCommands[] = $data;
+        }
+    }
+
+    public function dispatchPostedCommand()
+    {
+        foreach ($this->toInsertCommands as $data) {
+            $command = $data['command'];
             $serializedCommand = serialize($command);
             $encodedCommand = base64_encode($serializedCommand);
             $em = $this->doctrineRegistry->getManager();
             $args = array(
                 'serialized-command' => $encodedCommand,
-                'user-notification-enabled' => $userNotificationEnabled
+                'user-notification-enabled' => $data['user-notification-enabled'],
             );
             $commandName = 'emhar_cqrs:core-command:run';
             /* @see \JMS\JobQueueBundle\Entity\Repository\JobRepository::findJob() */
@@ -73,8 +83,8 @@ class JmsJobQueueCommandBus implements CommandBusInterface
                 ->setMaxResults(1)
                 ->getOneOrNullResult();
             if (!$pendingJob) {
-                $job = new Job($commandName, $args, true, $queue);
-                $job->addOutput(Debug::dump($command,10, true, false));
+                $job = new Job($commandName, $args, true, $data['queue']);
+                $job->addOutput(Debug::dump($command, 10, true, false));
                 $em->persist($job);
             }
         }
