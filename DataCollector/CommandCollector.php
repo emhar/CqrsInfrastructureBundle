@@ -58,7 +58,7 @@ class CommandCollector extends DataCollector
             /* @var $event SymfonyEventDispatcherCommandEvent */
             $this->data['emhar_cqrs_command'][] = array(
                 'command' => (new \ReflectionClass($event->getCommand()))->getShortName(),
-                'arguments' => Debug::dump($event->getCommand(),10, true, false),
+                'arguments' => Debug::dump($event->getCommand(), 10, true, false),
                 'executionTime' => $event->getTiming()
             );
         }
@@ -67,7 +67,7 @@ class CommandCollector extends DataCollector
             /* @var $command CommandInterface */
             $this->data['emhar_cqrs_job'][] = array(
                 'command' => (new \ReflectionClass($command))->getShortName(),
-                'arguments' => Debug::dump($command,10, true, false)
+                'arguments' => Debug::dump($command, 10, true, false)
             );
         }
     }
@@ -123,5 +123,16 @@ class CommandCollector extends DataCollector
     public function getCommands()
     {
         return $this->data['emhar_cqrs_command'];
+    }
+
+    /**
+     * Reset the data colector
+     */
+    public function reset()
+    {
+        $this->data['guzzleHttp'] = [
+            'emhar_cqrs_command' => new \SplQueue(),
+            'emhar_cqrs_job' => new \SplQueue()
+        ];
     }
 }
