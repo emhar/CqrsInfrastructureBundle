@@ -16,7 +16,6 @@ use Symfony\Component\DependencyInjection\Argument\ServiceClosureArgument;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\EventDispatcher\ContainerAwareEventDispatcher;
 use Symfony\Component\EventDispatcher\DependencyInjection\ExtractingEventDispatcher;
 
 /**
@@ -57,7 +56,7 @@ class RegisterEventSubscriberPass implements CompilerPassInterface
         }
 
         $dispatcherDefinition = $container->findDefinition($this->dispatcherService);
-        if(!method_exists(ContainerAwareEventDispatcher::class, 'addSubscriberService')){
+        if(!method_exists($dispatcherDefinition->getClass(), 'addSubscriberService')){
             $extractingDispatcher = new ExtractingEventDispatcher();
         }
         foreach ($container->findTaggedServiceIds($this->subscriberTag) as $id => $attributes) {

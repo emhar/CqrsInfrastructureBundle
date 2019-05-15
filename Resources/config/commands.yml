@@ -1,0 +1,19 @@
+services:
+    emhar_cqrs.commands.pause_queue:
+        class: Emhar\CqrsInfrastructureBundle\Command\PauseQueueCommand
+        tags: [{name: "console.command", command: "emhar-cqrs:queue:pause"}]
+    emhar_cqrs.commands.un_pause_queue:
+        class: Emhar\CqrsInfrastructureBundle\Command\UnPauseQueueCommand
+        tags: [{name: "console.command", command: "emhar-cqrs:queue:un-pause"}]
+    emhar_cqrs.commands.run_core_command:
+        class: Emhar\CqrsInfrastructureBundle\Command\RunCoreCommandCommand
+        tags: [{name: "console.command", command: "emhar-cqrs:queue:run"}]
+    emhar_cqrs.commands.test_queue:
+        class: Emhar\CqrsInfrastructureBundle\Command\TestQueueCommand
+        tags: [{name: "console.command", command: "emhar-cqrs:queue:test"}]
+    emhar_cqrs.commands.test_queue_internal:
+        class: Emhar\CqrsInfrastructureBundle\Command\TestQueueInternalCommand
+        tags: [{name: "console.command", command: "emhar-cqrs:queue:test-internal"}]
+    emhar_cqrs.commands.cleanup_queue:
+        class: Emhar\CqrsInfrastructureBundle\Command\CleanUpQueueCommand
+        parent: 'jms_job_queue.command.schedule'

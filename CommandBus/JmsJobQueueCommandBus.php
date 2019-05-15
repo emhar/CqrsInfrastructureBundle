@@ -69,7 +69,7 @@ class JmsJobQueueCommandBus implements CommandBusInterface
                 'serialized-command' => $encodedCommand,
                 'user-notification-enabled' => $data['user-notification-enabled'],
             );
-            $commandName = 'emhar_cqrs:core-command:run';
+            $commandName = 'emhar-cqrs:core-command:run';
             /* @see \JMS\JobQueueBundle\Entity\Repository\JobRepository::findJob() */
             //Same current with a criteria on state
             $pendingJob = $em

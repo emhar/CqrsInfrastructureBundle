@@ -33,6 +33,7 @@ class EmharCqrsInfrastructureExtension extends Extension
         $loader->load('services.yml');
         if ($container->getParameter('kernel.debug')) {
             $loader->load('datacollector.yml');
+            $loader->load('commands.yml');
         }
     }
 }

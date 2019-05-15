@@ -11,13 +11,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class UnPauseQueueCommand extends ContainerAwareCommand
 {
+    protected static $defaultName = 'emhar-cqrs:queue:un-pause';
+
     /**
      * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
      */
     protected function configure()
     {
         $this
-            ->setName('emhar-cqrs:queue:un-pause')
+            ->setName(self::$defaultName)
             ->setDescription('Pause all jobs in queue');
     }
 

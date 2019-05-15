@@ -24,6 +24,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class RunCoreCommandCommand extends ContainerAwareCommand
 {
 
+    protected static $defaultName = 'emhar-cqrs:core-command:run';
+
     /**
      * {@inheritDoc}
      * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
@@ -31,7 +33,7 @@ class RunCoreCommandCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('emhar_cqrs:core-command:run')
+            ->setName(self::$defaultName)
             ->setDescription('Run a cqrs command.')
             ->setHelp('Deserialize given cqrs command and run')
             ->addArgument('serialized-command', InputArgument::REQUIRED, 'The serialized command.')
@@ -55,14 +57,14 @@ class RunCoreCommandCommand extends ContainerAwareCommand
         ]);
         $serializedCommand = $input->getArgument('serialized-command');
         $userNotificationEnabled = true;
-        if($input->hasArgument('user-notification-enabled')
+        if ($input->hasArgument('user-notification-enabled')
             && $input->getArgument('user-notification-enabled') !== null
-        ){
-            $userNotificationEnabled= $input->getArgument('user-notification-enabled');
+        ) {
+            $userNotificationEnabled = $input->getArgument('user-notification-enabled');
         }
         $command = unserialize(base64_decode($serializedCommand), array('allowed_classes' => true));
         if ($command instanceof CommandInterface) {
-            $output->writeln(Debug::dump($command,10, true, false));
+            $output->writeln(Debug::dump($command, 10, true, false));
             $bus = $this->getContainer()->get('emhar_cqrs.synchronous_command_bus');
             $bus->getCommandResponse($command, $userNotificationEnabled);
             $output->writeln([

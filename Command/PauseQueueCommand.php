@@ -11,13 +11,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class PauseQueueCommand extends ContainerAwareCommand
 {
+    protected static $defaultName = 'emhar-cqrs:queue:pause';
+
     /**
      * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
      */
     protected function configure()
     {
         $this
-            ->setName('emhar-cqrs:queue:pause')
+            ->setName(self::$defaultName)
             ->setDescription('Pause all jobs in queue');
     }
 
@@ -46,11 +48,11 @@ class PauseQueueCommand extends ContainerAwareCommand
                 $this->pauseAllPendingJobs($em);
                 $count = $this->countAllRunningJob($em);
                 $output->writeln('Still ' . $count . ' jobs running queue');
-            } catch (\Exception $e){
+            } catch (\Exception $e) {
                 $count = 1;
                 $output->writeln('Fail to pause running jobs');
             }
-            if($i > 1000){
+            if ($i > 1000) {
                 throw new \Exception('Cannot pause running jobs, 1000 loops are not enough');
             }
         } while ((int)$count !== 0);
