@@ -13,12 +13,14 @@
   ],
   "require": {
     "php": ">=7.0",
-    "symfony/symfony": "*",
-    "doctrine/orm": "^2.5",
-    "doctrine/doctrine-bundle": "^1.6",
-    "jms/job-queue-bundle": "^1.4",
-    "twig/twig": "1.*",
-    "emhar/cqrs-infrastructure": "^1.2"
+    "doctrine/orm": "*",
+    "doctrine/doctrine-bundle": "*",
+    "jms/job-queue-bundle": "^1.4|^2.0",
+    "emhar/cqrs-infrastructure": "^1.2",
+    "symfony/event-dispatcher": "~3.1|4.0",
+    "symfony/config": "^3.1|^4.0",
+    "symfony/dependency-injection": "^3.1|^4.0",
+    "symfony/http-kernel": "^3.1|^4.0"
   },
   "extra": {
     "branch-alias": {
