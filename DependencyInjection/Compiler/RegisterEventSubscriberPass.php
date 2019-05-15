@@ -12,8 +12,12 @@
 namespace Emhar\CqrsInfrastructureBundle\DependencyInjection\Compiler;
 
 use Emhar\CqrsInfrastructure\EventSubscriber\EventSubscriberInterface;
+use Symfony\Component\DependencyInjection\Argument\ServiceClosureArgument;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\EventDispatcher\ContainerAwareEventDispatcher;
+use Symfony\Component\EventDispatcher\DependencyInjection\ExtractingEventDispatcher;
 
 /**
  * {@inheritDoc}
@@ -52,19 +56,22 @@ class RegisterEventSubscriberPass implements CompilerPassInterface
             return;
         }
 
-        $definition = $container->findDefinition($this->dispatcherService);
+        $dispatcherDefinition = $container->findDefinition($this->dispatcherService);
+        if(!method_exists(ContainerAwareEventDispatcher::class, 'addSubscriberService')){
+            $extractingDispatcher = new ExtractingEventDispatcher();
+        }
         foreach ($container->findTaggedServiceIds($this->subscriberTag) as $id => $attributes) {
-            $def = $container->getDefinition($id);
-            if (!$def->isPublic()) {
+            $subscriberDefinition = $container->getDefinition($id);
+            if (!$subscriberDefinition->isPublic()) {
                 throw new \InvalidArgumentException(sprintf('The service "%s" must be public as event subscribers are lazy-loaded.', $id));
             }
 
-            if ($def->isAbstract()) {
+            if ($subscriberDefinition->isAbstract()) {
                 throw new \InvalidArgumentException(sprintf('The service "%s" must not be abstract as event subscribers are lazy-loaded.', $id));
             }
 
             // We must assume that the class value has been correctly filled, even if the service is created by a factory
-            $class = $container->getParameterBag()->resolveValue($def->getClass());
+            $class = $container->getParameterBag()->resolveValue($subscriberDefinition->getClass());
             $interface = EventSubscriberInterface::class;
 
             if (!is_subclass_of($class, $interface)) {
@@ -74,8 +81,25 @@ class RegisterEventSubscriberPass implements CompilerPassInterface
 
                 throw new \InvalidArgumentException(sprintf('Service "%s" must implement interface "%s".', $id, $interface));
             }
+            if(isset($extractingDispatcher)){
+                //SF 4
+                $container->addObjectResource($class);
 
-            $definition->addMethodCall('addSubscriberService', array($id, $class));
+                ExtractingEventDispatcher::$subscriber = $class;
+                $extractingDispatcher->addSubscriber($extractingDispatcher);
+                foreach ($extractingDispatcher->listeners as $args) {
+                    $args[1] = array(new ServiceClosureArgument(new Reference($id)), $args[1]);
+                    $dispatcherDefinition->addMethodCall('addListener', $args);
+
+                    if (isset($this->hotPathEvents[$args[0]])) {
+                        $container->getDefinition($id)->addTag('container.hot_path');
+                    }
+                }
+                $extractingDispatcher->listeners = array();
+            } else {
+                //SF 3
+                $dispatcherDefinition->addMethodCall('addSubscriberService', array($id, $class));
+            }
         }
     }
 }
