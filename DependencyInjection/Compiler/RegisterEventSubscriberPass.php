@@ -56,7 +56,7 @@ class RegisterEventSubscriberPass implements CompilerPassInterface
         }
 
         $dispatcherDefinition = $container->findDefinition($this->dispatcherService);
-        if (!class_exists('Symfony\Component\EventDispatcher')) {
+        if (!class_exists('Symfony\Component\EventDispatcher\ContainerAwareEventDispatcher')) {
             //SF 4
             $extractingDispatcher = new ExtractingEventDispatcher();
         }
