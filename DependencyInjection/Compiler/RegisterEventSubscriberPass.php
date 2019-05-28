@@ -56,7 +56,8 @@ class RegisterEventSubscriberPass implements CompilerPassInterface
         }
 
         $dispatcherDefinition = $container->findDefinition($this->dispatcherService);
-        if(!method_exists($dispatcherDefinition->getClass(), 'addSubscriberService')){
+        if (!class_exists('Symfony\Component\EventDispatcher')) {
+            //SF 4
             $extractingDispatcher = new ExtractingEventDispatcher();
         }
         foreach ($container->findTaggedServiceIds($this->subscriberTag) as $id => $attributes) {
@@ -80,7 +81,7 @@ class RegisterEventSubscriberPass implements CompilerPassInterface
 
                 throw new \InvalidArgumentException(sprintf('Service "%s" must implement interface "%s".', $id, $interface));
             }
-            if(isset($extractingDispatcher)){
+            if (isset($extractingDispatcher)) {
                 //SF 4
                 $container->addObjectResource($class);
 
