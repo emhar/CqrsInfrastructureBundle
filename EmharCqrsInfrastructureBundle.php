@@ -4,6 +4,7 @@ namespace Emhar\CqrsInfrastructureBundle;
 
 use Emhar\CqrsInfrastructureBundle\DependencyInjection\Compiler\CommandHandlerAdapterPass;
 use Emhar\CqrsInfrastructureBundle\DependencyInjection\Compiler\EventSubscriberAdapterPass;
+use Emhar\CqrsInfrastructureBundle\DependencyInjection\Compiler\JmsJobScheduledCommandPass;
 use Emhar\CqrsInfrastructureBundle\DependencyInjection\Compiler\RegisterEventSubscriberPass;
 use Emhar\CqrsInfrastructureBundle\DependencyInjection\Compiler\RepositoryDoctrineEventCollectorPass;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
@@ -35,5 +36,6 @@ class EmharCqrsInfrastructureBundle extends Bundle
             'emhar_cqrs.command_handler',
             'emhar_cqrs.command_subscriber'
         ), PassConfig::TYPE_BEFORE_REMOVING);
+        $container->addCompilerPass(new JmsJobScheduledCommandPass());
     }
 }

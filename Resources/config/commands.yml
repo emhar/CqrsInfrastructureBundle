@@ -16,4 +16,3 @@ services:
         tags: [{name: "console.command", command: "emhar-cqrs:queue:test-internal"}]
     emhar_cqrs.commands.cleanup_queue:
         class: Emhar\CqrsInfrastructureBundle\Command\CleanUpQueueCommand
-        parent: 'jms_job_queue.command.schedule'
