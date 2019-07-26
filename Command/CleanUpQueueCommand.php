@@ -2,6 +2,7 @@
 
 namespace Emhar\CqrsInfrastructureBundle\Command;
 
+use Doctrine\DBAL\Connection;
 use JMS\JobQueueBundle\Command\ScheduleCommand;
 use JMS\JobQueueBundle\Console\CronCommand;
 use JMS\JobQueueBundle\Console\ScheduleHourly;
@@ -36,6 +37,7 @@ class CleanUpQueueCommand extends ScheduleCommand implements CronCommand
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceCircularReferenceException
      * @throws \LogicException
      * @throws \Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException
+     * @throws \Doctrine\DBAL\DBALException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -45,6 +47,16 @@ class CleanUpQueueCommand extends ScheduleCommand implements CronCommand
             '',
         ]);
         $doctrine = $this->getContainer()->get('doctrine');
+        $conn = $doctrine->getConnection();
+        /* @var $conn Connection */
+        //If j1 depends that j2 is finished, delete dependencies when j2 is finished
+        $stmt = $conn->prepare(
+            'DELETE d FROM jms_job_dependencies d
+            INNER JOIN jms_jobs j2 ON d.dest_job_id=j2.id
+            AND j2.state="' . Job::STATE_FINISHED.'"'
+        );
+        $stmt->execute();
+
         $em = $doctrine->getManager();
         /* @var $em \Doctrine\ORM\EntityManager */
         $qb = $em->createQueryBuilder();
