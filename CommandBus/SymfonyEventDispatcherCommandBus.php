@@ -63,7 +63,7 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
     /**
      * {@inheritDoc}
      */
-    public function postCommand(CommandInterface $command, bool $userNotificationEnabled = true, string $queue = self::DEFAULT_QUEUE)
+    public function postCommand(CommandInterface $command, bool $userNotificationEnabled = true, string $queue = self::DEFAULT_QUEUE, string $priority = self::PRIORITY_NORMAL)
     {
         foreach ($this->events as $event) {
             if ($command == $event->getCommand()) {

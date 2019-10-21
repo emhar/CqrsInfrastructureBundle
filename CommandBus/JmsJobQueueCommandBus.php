@@ -49,11 +49,11 @@ class JmsJobQueueCommandBus implements CommandBusInterface
      * {@inheritDoc}
      * @throws \InvalidArgumentException
      */
-    public function postCommand(CommandInterface $command, bool $userNotificationEnabled = true, string $queue = self::DEFAULT_QUEUE)
+    public function postCommand(CommandInterface $command, bool $userNotificationEnabled = true, string $queue = self::DEFAULT_QUEUE, string $priority = self::PRIORITY_NORMAL)
     {
         if (!in_array($command, $this->postedCommands, false)) {
             $this->postedCommands[] = $command;
-            $data = array('command' => $command, 'user-notification-enabled' => $userNotificationEnabled, 'queue' => $queue);
+            $data = array('command' => $command, 'user-notification-enabled' => $userNotificationEnabled, 'queue' => $queue, 'priority' => $priority);
             $this->toInsertCommands[] = $data;
         }
     }
@@ -83,7 +83,7 @@ class JmsJobQueueCommandBus implements CommandBusInterface
                 ->setMaxResults(1)
                 ->getOneOrNullResult();
             if (!$pendingJob) {
-                $job = new Job($commandName, $args, true, $data['queue']);
+                $job = new Job($commandName, $args, true, $data['queue'], $data['priority']);
                 $job->addOutput(Debug::dump($command, 10, true, false));
                 $em->persist($job);
             }
