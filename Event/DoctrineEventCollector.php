@@ -15,9 +15,9 @@ use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Events;
 use Emhar\CqrsInfrastructure\Event\AbstractEventContainer;
+use Emhar\CqrsInfrastructure\Event\Event;
 use Emhar\CqrsInfrastructure\Event\EventContainerInterface;
 use Emhar\CqrsInfrastructureBundle\Repository\AbstractDoctrineRepository;
-use Symfony\Component\EventDispatcher\Event;
 
 /**
  * {@inheritDoc}
