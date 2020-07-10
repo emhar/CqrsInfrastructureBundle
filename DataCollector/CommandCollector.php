@@ -11,7 +11,7 @@
 
 namespace Emhar\CqrsInfrastructureBundle\DataCollector;
 
-use Doctrine\Common\Util\Debug;
+use Emhar\CqrsInfrastructureBundle\Util\Debug;
 use Emhar\CqrsInfrastructure\Command\CommandInterface;
 use Emhar\CqrsInfrastructureBundle\CommandBus\JmsJobQueueCommandBus;
 use Emhar\CqrsInfrastructureBundle\CommandBus\SymfonyEventDispatcherCommandBus;

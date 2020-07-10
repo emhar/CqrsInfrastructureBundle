@@ -51,6 +51,11 @@ class SymfonyEventDispatcherCommandEvent extends Event
     protected $executionStart;
 
     /**
+     * @var mixed|null
+     */
+    protected $executionId;
+
+    /**
      * @param CommandInterface $command
      * @param bool $enableUserNotification
      */
@@ -141,5 +146,21 @@ class SymfonyEventDispatcherCommandEvent extends Event
     public function isUserNotificationEnabled()
     {
         return $this->userNotificationEnabled;
+    }
+
+    /**
+     * @return mixed|null
+     */
+    public function getExecutionId()
+    {
+        return $this->executionId;
+    }
+
+    /**
+     * @param mixed|null $executionId
+     */
+    public function setExecutionId($executionId)
+    {
+        $this->executionId = $executionId;
     }
 }

@@ -12,7 +12,7 @@
 namespace Emhar\CqrsInfrastructureBundle\CommandBus;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
-use Doctrine\Common\Util\Debug;
+use Emhar\CqrsInfrastructureBundle\Util\Debug;
 use Doctrine\DBAL\Types\Type;
 use Emhar\CqrsInfrastructure\Command\CommandInterface;
 use Emhar\CqrsInfrastructure\CommandBus\CommandBusInterface;
@@ -25,7 +25,14 @@ class JmsJobQueueCommandBus implements CommandBusInterface
      */
     protected $doctrineRegistry;
 
+    /**
+     * @var array
+     */
     protected $postedCommands = array();
+
+    /**
+     * @var array
+     */
     protected $toInsertCommands = array();
 
     /**
@@ -58,7 +65,7 @@ class JmsJobQueueCommandBus implements CommandBusInterface
         }
     }
 
-    public function dispatchPostedCommand()
+    public function dispatchPostedCommand(CqrsEventsCollectedEvent $cqrsEventsCollectedEvent)
     {
         foreach ($this->toInsertCommands as $data) {
             $command = $data['command'];
@@ -68,6 +75,7 @@ class JmsJobQueueCommandBus implements CommandBusInterface
             $args = array(
                 'serialized-command' => $encodedCommand,
                 'user-notification-enabled' => $data['user-notification-enabled'],
+                'execution-id' => $cqrsEventsCollectedEvent->getExecutionId()
             );
             $commandName = 'emhar-cqrs:core-command:run';
             /* @see \JMS\JobQueueBundle\Entity\Repository\JobRepository::findJob() */

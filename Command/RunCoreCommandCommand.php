@@ -11,8 +11,9 @@
 
 namespace Emhar\CqrsInfrastructureBundle\Command;
 
-use Doctrine\Common\Util\Debug;
 use Emhar\CqrsInfrastructure\Command\CommandInterface;
+use Emhar\CqrsInfrastructureBundle\CommandBus\CqrsEventsCollectedEvent;
+use Emhar\CqrsInfrastructureBundle\Util\Debug;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -37,7 +38,8 @@ class RunCoreCommandCommand extends ContainerAwareCommand
             ->setDescription('Run a cqrs command.')
             ->setHelp('Deserialize given cqrs command and run')
             ->addArgument('serialized-command', InputArgument::REQUIRED, 'The serialized command.')
-            ->addArgument('user-notification-enabled', InputArgument::OPTIONAL, 'If set to false, disable email notification.');
+            ->addArgument('user-notification-enabled', InputArgument::OPTIONAL, 'If set to false, disable email notification.')
+            ->addArgument('execution-id', InputArgument::OPTIONAL, 'To trace first command which has generated this jobs.');
     }
 
     /**
@@ -66,7 +68,8 @@ class RunCoreCommandCommand extends ContainerAwareCommand
         if ($command instanceof CommandInterface) {
             $output->writeln(Debug::dump($command, 10, true, false));
             $bus = $this->getContainer()->get('emhar_cqrs.synchronous_command_bus');
-            $bus->getCommandResponse($command, $userNotificationEnabled);
+            $bus->postCommand($command, $userNotificationEnabled);
+            $bus->dispatchPostedCommand(new CqrsEventsCollectedEvent($input->getArgument('execution-id')));
             $output->writeln([
                 'Tasks Finish',
                 '============',

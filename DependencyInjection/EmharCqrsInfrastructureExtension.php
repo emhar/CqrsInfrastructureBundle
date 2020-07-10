@@ -13,6 +13,7 @@ namespace Emhar\CqrsInfrastructureBundle\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
@@ -21,7 +22,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
  *
  * @link http://symfony.com/doc/current/cookbook/bundles/extension.html
  */
-class EmharCqrsInfrastructureExtension extends Extension
+class EmharCqrsInfrastructureExtension extends Extension  implements PrependExtensionInterface
 {
     /**
      * {@inheritdoc}
@@ -35,5 +36,15 @@ class EmharCqrsInfrastructureExtension extends Extension
         if ($container->getParameter('kernel.debug')) {
             $loader->load('datacollector.yml');
         }
+    }
+
+    /**
+     * Allow an extension to prepend the extension configurations.
+     *
+     * @param ContainerBuilder $container
+     */
+    public function prepend(ContainerBuilder $container)
+    {
+        $container->prependExtensionConfig('monolog', array('channels'=>array('emhar_command')));
     }
 }

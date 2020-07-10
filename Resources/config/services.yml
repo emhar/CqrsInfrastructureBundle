@@ -4,13 +4,13 @@ services:
         public: true
         arguments: ['@event_dispatcher']
         tags:
-            - { name: kernel.event_listener, event: 'cqrs-event-collected', method: 'dispatchPostedCommand' }
+            - { name: kernel.event_listener, event: 'cqrs-events-collected', method: 'dispatchPostedCommand' }
     emhar_cqrs.asynchronous_command_bus:
         class: Emhar\CqrsInfrastructureBundle\CommandBus\JmsJobQueueCommandBus
         public: true
         arguments: ['@doctrine']
         tags:
-            - { name: kernel.event_listener, event: 'cqrs-event-collected', method: 'dispatchPostedCommand' }
+            - { name: kernel.event_listener, event: 'cqrs-events-collected', method: 'dispatchPostedCommand' }
     emhar_cqrs.doctrine_event_collector:
         class: Emhar\CqrsInfrastructureBundle\Event\DoctrineEventCollector
         public: false

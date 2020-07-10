@@ -74,11 +74,12 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
         $this->events->push($event);
     }
 
-    public function dispatchPostedCommand()
+    public function dispatchPostedCommand(CqrsEventsCollectedEvent $cqrsEventsCollectedEvent)
     {
-        if(!$this->isInProgress) {
+        if (!$this->isInProgress) {
             $this->isInProgress = true;
             while ($event = $this->getNextEvent()) {
+                $event->setExecutionId($cqrsEventsCollectedEvent->getExecutionId());
                 $event->setExecutionStart();
                 $this->dispatcher->dispatch(get_class($event->getCommand()), $event);
                 $event->setExecutionStop();
@@ -93,7 +94,7 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
      */
     protected function getNextEvent()
     {
-        if($this->events->isEmpty()){
+        if ($this->events->isEmpty()) {
             return null;
         }
         return $this->events->shift();
