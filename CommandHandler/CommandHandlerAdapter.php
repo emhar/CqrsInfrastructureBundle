@@ -126,8 +126,8 @@ class CommandHandlerAdapter
                 $this->eventDispatcher->dispatch(get_class($event), new SymfonyEventDispatcherEvent($event));
             }
             $this->doctrineRegistry->getManager()->flush();
-            $em->commit();
             $this->logCommand($command, $executionId);
+            $em->commit();
             $cqrsEventsCollectedEvent = new CqrsEventsCollectedEvent($executionId);
             $this->eventDispatcher->dispatch('cqrs-events-collected', $cqrsEventsCollectedEvent);
             $this->doctrineRegistry->getManager()->flush();
