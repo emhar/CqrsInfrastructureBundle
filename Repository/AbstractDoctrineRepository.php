@@ -14,6 +14,7 @@ namespace Emhar\CqrsInfrastructureBundle\Repository;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\ORM\EntityManager;
 use Emhar\CqrsInfrastructure\Event\EventContainerInterface;
+use Psr\Log\LoggerInterface;
 
 abstract class AbstractDoctrineRepository implements EventContainerInterface
 {
@@ -23,6 +24,11 @@ abstract class AbstractDoctrineRepository implements EventContainerInterface
     protected $doctrineRegistry;
 
     /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
+    /**
      * @var array
      */
     protected $events = array();
@@ -30,9 +36,10 @@ abstract class AbstractDoctrineRepository implements EventContainerInterface
     /**
      * @param Registry $doctrineRegistry
      */
-    public function __construct(Registry $doctrineRegistry)
+    public function __construct(Registry $doctrineRegistry, LoggerInterface $logger)
     {
         $this->doctrineRegistry = $doctrineRegistry;
+        $this->logger = $logger;
     }
 
     /**
@@ -53,10 +60,10 @@ abstract class AbstractDoctrineRepository implements EventContainerInterface
      */
     protected function getDoctrineManager(): EntityManager
     {
-        try{
+        try {
             $manager = $this->doctrineRegistry->getManager();
             /* @var $manager EntityManager */
-        } catch (\InvalidArgumentException $e){
+        } catch (\InvalidArgumentException $e) {
             trigger_error('No entity manager defined', E_USER_ERROR);
             $manager = null;
         }
