@@ -12,10 +12,10 @@
 namespace Emhar\CqrsInfrastructureBundle\CommandBus;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
-use Emhar\CqrsInfrastructureBundle\Util\Debug;
 use Doctrine\DBAL\Types\Type;
 use Emhar\CqrsInfrastructure\Command\CommandInterface;
 use Emhar\CqrsInfrastructure\CommandBus\CommandBusInterface;
+use Emhar\CqrsInfrastructureBundle\Util\Debug;
 use JMS\JobQueueBundle\Entity\Job;
 
 class JmsJobQueueCommandBus implements CommandBusInterface
@@ -80,13 +80,17 @@ class JmsJobQueueCommandBus implements CommandBusInterface
             $commandName = 'emhar-cqrs:core-command:run';
             /* @see \JMS\JobQueueBundle\Entity\Repository\JobRepository::findJob() */
             //Same current with a criteria on state
+
+            $findArgs = $args;
+            $findArgs['execution-id'] = '%';
+
             $pendingJob = $em
                 ->createQuery(
                     'SELECT j FROM JMSJobQueueBundle:Job j'
-                    . ' WHERE j.command = :command AND j.args = :args AND j.state = :state'
+                    . ' WHERE j.command = :command AND j.state = :state AND j.args LIKE :args'
                 )
                 ->setParameter('command', $commandName)
-                ->setParameter('args', $args, Type::JSON_ARRAY)
+                ->setParameter('args', json_encode($findArgs))
                 ->setParameter('state', Job::STATE_PENDING)
                 ->setMaxResults(1)
                 ->getOneOrNullResult();
