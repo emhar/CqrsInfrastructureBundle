@@ -32,18 +32,13 @@ class CommandHandlerAdapterPass implements CompilerPassInterface
         $decorators = array();
         $adapterDefinition = new Definition(CommandHandlerAdapter::class, array(
             new Reference('doctrine'),
-            new Reference('emhar_cqrs.doctrine_event_collector'),
-            new Reference('event_dispatcher'),
-            new Reference('monolog.logger.emhar_command'),
-            new Reference('request_stack'),
-            new Reference('security.token_storage')
+            new Reference('emhar_cqrs.command_handler.adapter_utils')
         ));
         foreach ($taggedServices as $id => $taggedService) {
             $decoratorId = $id . '_decorator';
             $definition = clone $adapterDefinition;
             $definition->addMethodCall('setInnerService', array(new Reference($decoratorId . '.inner')));
             $definition->setDecoratedService($id);
-            $definition->addTag('monolog.logger', array('channel'=> 'emhar_command'));
             $decorators[$decoratorId] = $definition;
         }
         $container->addDefinitions($decorators);

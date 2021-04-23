@@ -12,7 +12,6 @@
 namespace Emhar\CqrsInfrastructureBundle\CommandBus;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
-use Doctrine\DBAL\Types\Type;
 use Emhar\CqrsInfrastructure\Command\CommandInterface;
 use Emhar\CqrsInfrastructure\CommandBus\CommandBusInterface;
 use Emhar\CqrsInfrastructureBundle\Util\Debug;
@@ -47,7 +46,7 @@ class JmsJobQueueCommandBus implements CommandBusInterface
      * {@inheritDoc}
      * @throws \LogicException
      */
-    public function getCommandResponse(CommandInterface $command, bool $enableUserNotification = true)
+    public function getCommandResponse(CommandInterface $command, bool $enableUserNotification = true, array $options = array())
     {
         throw new \LogicException('Cannot use an asynchronous command and getting a response.');
     }
@@ -56,11 +55,11 @@ class JmsJobQueueCommandBus implements CommandBusInterface
      * {@inheritDoc}
      * @throws \InvalidArgumentException
      */
-    public function postCommand(CommandInterface $command, bool $userNotificationEnabled = true, string $queue = self::DEFAULT_QUEUE, string $priority = self::PRIORITY_NORMAL, \DateTime $executeAfter = null)
+    public function postCommand(CommandInterface $command, bool $userNotificationEnabled = true, string $queue = self::DEFAULT_QUEUE, string $priority = self::PRIORITY_NORMAL, \DateTime $executeAfter = null, bool $isAsync = false, array $options = array(), int $retryCounter = 0)
     {
         if (!in_array($command, $this->postedCommands, false)) {
             $this->postedCommands[] = $command;
-            $data = array('command' => $command, 'user-notification-enabled' => $userNotificationEnabled, 'queue' => $queue, 'priority' => $priority, 'executeAfter' => $executeAfter);
+            $data = array('command' => $command, 'user-notification-enabled' => $userNotificationEnabled, 'queue' => $queue, 'priority' => $priority, 'executeAfter' => $executeAfter, 'options' => $options, 'retryCounter' => $retryCounter);
             $this->toInsertCommands[] = $data;
         }
     }
@@ -75,7 +74,9 @@ class JmsJobQueueCommandBus implements CommandBusInterface
             $args = array(
                 'serialized-command' => $encodedCommand,
                 'user-notification-enabled' => $data['user-notification-enabled'],
-                'execution-id' => $cqrsEventsCollectedEvent->getExecutionId()
+                'execution-id' => $cqrsEventsCollectedEvent->getExecutionId(),
+                'options' => json_encode(array_merge($data['options'], $cqrsEventsCollectedEvent->getOptions())),
+                'retryCounter' => $data['retryCounter']
             );
             $commandName = 'emhar-cqrs:core-command:run';
             /* @see \JMS\JobQueueBundle\Entity\Repository\JobRepository::findJob() */
@@ -83,6 +84,8 @@ class JmsJobQueueCommandBus implements CommandBusInterface
 
             $findArgs = $args;
             $findArgs['execution-id'] = '%';
+            $findArgs['options'] = '%';
+            $findArgs['retryCounter'] = '%';
 
             $pendingJob = $em
                 ->createQuery(
@@ -104,6 +107,12 @@ class JmsJobQueueCommandBus implements CommandBusInterface
             }
         }
         $this->toInsertCommands = array();
+    }
+
+    public function cancelPostedCommand()
+    {
+        $this->toInsertCommands = array();
+        $this->postCommands = array();
     }
 
     /**

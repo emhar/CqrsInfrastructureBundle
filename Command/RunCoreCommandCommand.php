@@ -12,11 +12,13 @@
 namespace Emhar\CqrsInfrastructureBundle\Command;
 
 use Emhar\CqrsInfrastructure\Command\CommandInterface;
+use Emhar\CqrsInfrastructure\CommandBus\CommandBusInterface;
 use Emhar\CqrsInfrastructureBundle\CommandBus\CqrsEventsCollectedEvent;
 use Emhar\CqrsInfrastructureBundle\Util\Debug;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -39,7 +41,9 @@ class RunCoreCommandCommand extends ContainerAwareCommand
             ->setHelp('Deserialize given cqrs command and run')
             ->addArgument('serialized-command', InputArgument::REQUIRED, 'The serialized command.')
             ->addArgument('user-notification-enabled', InputArgument::OPTIONAL, 'If set to false, disable email notification.')
-            ->addArgument('execution-id', InputArgument::OPTIONAL, 'To trace first command which has generated this jobs.');
+            ->addArgument('execution-id', InputArgument::OPTIONAL, 'To trace first command which has generated this jobs.')
+            ->addArgument('options', InputArgument::OPTIONAL, 'Option are availlable in command handler and given on generated sub commmands.', '[]')
+            ->addArgument('retryCounter', InputArgument::OPTIONAL, 'Counter of retried jobs in case of fail.', 0);
     }
 
     /**
@@ -68,8 +72,25 @@ class RunCoreCommandCommand extends ContainerAwareCommand
         if ($command instanceof CommandInterface) {
             $output->writeln(Debug::dump($command, 10, true, false));
             $bus = $this->getContainer()->get('emhar_cqrs.synchronous_command_bus');
-            $bus->postCommand($command, $userNotificationEnabled);
-            $bus->dispatchPostedCommand(new CqrsEventsCollectedEvent($input->getArgument('execution-id')));
+            $bus->postCommand(
+                $command,
+                $userNotificationEnabled,
+                CommandBusInterface::DEFAULT_QUEUE,
+                CommandBusInterface::PRIORITY_NORMAL,
+                null,
+                true,
+                json_decode($input->getArgument('options') ?? array(), true),
+                $input->getArgument('retryCounter') ?? 0
+            );
+            $event = new CqrsEventsCollectedEvent($input->getArgument('execution-id'));
+            $bus->dispatchPostedCommand($event);
+            foreach ($event->getErrors() as $error) {
+                if ($output instanceof ConsoleOutput) {
+                    $output->getErrorOutput()->writeln(get_class($error) . ': ' . $error->getMessage() . ' ' . $error->getTraceAsString());
+                } else {
+                    $output->writeln('<error>' . get_class($error) . ': ' . $error->getMessage() . ' ' . $error->getTraceAsString() . '</error>');
+                }
+            }
             $output->writeln([
                 'Tasks Finish',
                 '============',

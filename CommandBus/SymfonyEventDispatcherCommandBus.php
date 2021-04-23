@@ -50,9 +50,9 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
     /**
      * {@inheritDoc}
      */
-    public function getCommandResponse(CommandInterface $command, bool $enableUserNotification = true)
+    public function getCommandResponse(CommandInterface $command, bool $enableUserNotification = true, array $options = array())
     {
-        $event = new SymfonyEventDispatcherCommandEvent($command, $enableUserNotification);
+        $event = new SymfonyEventDispatcherCommandEvent($command, $enableUserNotification, false, $options, 0);
         $this->executedEvents[] = $event;
         $event->setExecutionStart();
         $this->dispatcher->dispatch(get_class($command), $event);
@@ -63,14 +63,14 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
     /**
      * {@inheritDoc}
      */
-    public function postCommand(CommandInterface $command, bool $userNotificationEnabled = true, string $queue = self::DEFAULT_QUEUE, string $priority = self::PRIORITY_NORMAL, \DateTime $executeAfter = null)
+    public function postCommand(CommandInterface $command, bool $userNotificationEnabled = true, string $queue = self::DEFAULT_QUEUE, string $priority = self::PRIORITY_NORMAL, \DateTime $executeAfter = null, bool $isAsync = false, array $options = array(), int $retryCounter = 0)
     {
         foreach ($this->events as $event) {
             if ($command == $event->getCommand()) {
                 return;
             }
         }
-        $event = new SymfonyEventDispatcherCommandEvent($command, $userNotificationEnabled);
+        $event = new SymfonyEventDispatcherCommandEvent($command, $userNotificationEnabled, $isAsync, $options, $retryCounter);
         $this->events->push($event);
     }
 
@@ -80,10 +80,14 @@ class SymfonyEventDispatcherCommandBus implements CommandBusInterface
             $this->isInProgress = true;
             while ($event = $this->getNextEvent()) {
                 $event->setExecutionId($cqrsEventsCollectedEvent->getExecutionId());
+                $event->setOptions(array_merge($event->getOptions(), $cqrsEventsCollectedEvent->getOptions()));
                 $event->setExecutionStart();
                 $this->dispatcher->dispatch(get_class($event->getCommand()), $event);
                 $event->setExecutionStop();
                 $this->executedEvents[] = $event;
+                if ($event->getError()) {
+                    $cqrsEventsCollectedEvent->addError($event->getError());
+                }
             }
             $this->isInProgress = false;
         }

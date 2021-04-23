@@ -24,11 +24,23 @@ class CqrsEventsCollectedEvent extends Event
     protected $executionId;
 
     /**
+     * @var array
+     */
+    protected $options;
+
+    /**
+     * @var \Exception[]
+     */
+    protected $errors;
+
+    /**
      * @param mixed $executionId
      */
-    public function __construct($executionId)
+    public function __construct($executionId, array $options = array())
     {
         $this->executionId = $executionId;
+        $this->options = $options;
+        $this->errors = array();
     }
 
     /**
@@ -37,5 +49,29 @@ class CqrsEventsCollectedEvent extends Event
     public function getExecutionId()
     {
         return $this->executionId;
+    }
+
+    /**
+     * @return array
+     */
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
+
+    /**
+     * @return \Exception[]
+     */
+    public function getErrors(): array
+    {
+        return $this->errors;
+    }
+
+    /**
+     * @param \Exception $error
+     */
+    public function addError(\Exception $error)
+    {
+        $this->errors[] = $error;
     }
 }

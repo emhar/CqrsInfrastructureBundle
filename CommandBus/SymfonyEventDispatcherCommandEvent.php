@@ -32,6 +32,21 @@ class SymfonyEventDispatcherCommandEvent extends Event
     protected $userNotificationEnabled;
 
     /**
+     * @var boolean
+     */
+    protected $isAsync;
+
+    /**
+     * @var array
+     */
+    protected $options;
+
+    /**
+     * @var int
+     */
+    protected $retryCounter;
+
+    /**
      * @var mixed|null
      */
     protected $response;
@@ -56,13 +71,24 @@ class SymfonyEventDispatcherCommandEvent extends Event
     protected $executionId;
 
     /**
+     * @var \Exception|null
+     */
+    protected $error;
+
+    /**
      * @param CommandInterface $command
      * @param bool $enableUserNotification
+     * @param bool $isAsync
+     * @param array $options
+     * @param int $retryCounter
      */
-    public function __construct(CommandInterface $command, bool $enableUserNotification)
+    public function __construct(CommandInterface $command, bool $enableUserNotification, bool $isAsync, array $options = array(), int $retryCounter = 0)
     {
         $this->command = $command;
         $this->userNotificationEnabled = $enableUserNotification;
+        $this->isAsync = $isAsync;
+        $this->options = $options;
+        $this->retryCounter = $retryCounter;
     }
 
     /**
@@ -149,6 +175,38 @@ class SymfonyEventDispatcherCommandEvent extends Event
     }
 
     /**
+     * @return bool
+     */
+    public function isAsync(): bool
+    {
+        return $this->isAsync;
+    }
+
+    /**
+     * @return int
+     */
+    public function getRetryCounter(): int
+    {
+        return $this->retryCounter;
+    }
+
+    /**
+     * @return array
+     */
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
+
+    /**
+     * @param array $options
+     */
+    public function setOptions(array $options)
+    {
+        $this->options = $options;
+    }
+
+    /**
      * @return mixed|null
      */
     public function getExecutionId()
@@ -162,5 +220,21 @@ class SymfonyEventDispatcherCommandEvent extends Event
     public function setExecutionId($executionId)
     {
         $this->executionId = $executionId;
+    }
+
+    /**
+     * @return \Exception|null
+     */
+    public function getError()
+    {
+        return $this->error;
+    }
+
+    /**
+     * @param \Exception|null $error
+     */
+    public function setError(\Exception $error = null)
+    {
+        $this->error = $error;
     }
 }

@@ -17,3 +17,16 @@ services:
         arguments: [[]] #see compiler pass, inject all repositories
         tags:
             - { name: doctrine.event_subscriber, connection: default }
+    emhar_cqrs.command_handler.adapter_utils:
+        class: Emhar\CqrsInfrastructureBundle\CommandHandler\CommandHandlerAdapterUtils
+        public: false
+        arguments:
+            - '@event_dispatcher'
+            - '@doctrine'
+            - '@monolog.logger.emhar_command'
+            - '@request_stack'
+            - '@security.token_storage'
+            - '@emhar_cqrs.asynchronous_command_bus'
+            - '@emhar_cqrs.doctrine_event_collector'
+        tags:
+            - { name: monolog.logger, channel: emhar_command }
