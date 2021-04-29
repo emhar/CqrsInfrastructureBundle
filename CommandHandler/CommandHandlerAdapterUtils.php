@@ -166,6 +166,10 @@ class CommandHandlerAdapterUtils
             ) {
                 $this->doctrineRegistry->resetManager();
                 $this->asyncBus->cancelPostedCommand();
+                if ($handler instanceof AbstractInfrastructureExceptionListeningCommandHandler) {
+                    $handler->onInfrastructureException($e, $commandEvent->getCommand());
+                }
+
                 $this->asyncBus->postCommand(
                     $commandEvent->getCommand(),
                     $commandEvent->isUserNotificationEnabled(),
