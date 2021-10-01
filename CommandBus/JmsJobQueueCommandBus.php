@@ -82,18 +82,22 @@ class JmsJobQueueCommandBus implements CommandBusInterface
             /* @see \JMS\JobQueueBundle\Entity\Repository\JobRepository::findJob() */
             //Same current with a criteria on state
 
-            $findArgs = $args;
-            $findArgs['execution-id'] = '%';
-            $findArgs['options'] = '%';
-            $findArgs['retryCounter'] = '%';
+            $findArgs = array(
+                'serialized-command' => $args['serialized-command'],
+                'user-notification-enabled' => $args['user-notification-enabled']
+            );
+            $jsonFindArgs = json_encode($findArgs);
+            $jsonFindArgs = substr($jsonFindArgs, 1);
+            $jsonFindArgs = substr($jsonFindArgs, 0, -1);
+            $jsonFindArgs = '%' . $jsonFindArgs . '%';
 
             $pendingJob = $em
                 ->createQuery(
-                    'SELECT j FROM JMSJobQueueBundle:Job j'
+                    'SELECT j.id FROM JMSJobQueueBundle:Job j'
                     . ' WHERE j.command = :command AND j.state = :state AND j.args LIKE :args'
                 )
                 ->setParameter('command', $commandName)
-                ->setParameter('args', json_encode($findArgs))
+                ->setParameter('args', $jsonFindArgs)
                 ->setParameter('state', Job::STATE_PENDING)
                 ->setMaxResults(1)
                 ->getOneOrNullResult();
